@@ -1,75 +1,182 @@
-# React + TypeScript + Vite
+# 🌾 AgroMarket
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AgroMarket is a modern decentralized agricultural marketplace that connects farmers, sellers, and buyers through a secure and intuitive platform. The application enables users to browse agricultural products, manage inventories, place orders, and make payments using the Stellar (XLM) blockchain.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Features
 
-## React Compiler
+### Authentication
+- User Registration
+- Secure Login
+- Email Verification
+- Protected Routes
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Marketplace
+- Browse Products
+- Search Products
+- Filter by Category
+- Product Details
+- Related Products
 
-## Expanding the ESLint configuration
+### Seller Dashboard
+- Create Products
+- Edit Products
+- Delete Products
+- Upload Product Images
+- Inventory Management
+- Sales Dashboard
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Buyer Dashboard
+- Shopping Cart
+- Wishlist
+- Order History
+- Recently Viewed Products
+- Profile Management
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Checkout
+- Multi-step Checkout
+- Shipping Information
+- Order Summary
+- Order Tracking
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Payments
+- Stellar (XLM) Payment Integration
+- Transaction Verification
+- Payment History
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Reviews
+- Product Ratings
+- Seller Ratings
+- Customer Reviews
+
+### Notifications
+- Order Updates
+- Payment Notifications
+- Shipping Notifications
+
+### Admin
+- User Management
+- Product Management
+- Analytics Dashboard
+- Reports
+
+---
+
+# 🛠 Tech Stack
+
+- React
+- Vite
+- TypeScript
+- React Router
+- TanStack Query
+- Supabase
+- Tailwind CSS
+- React Hook Form
+- Zod
+- Stellar SDK
+
+---
+
+# 📂 Project Structure
 
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+src/
+│
+├── components/
+├── features/
+│   ├── auth
+│   ├── marketplace
+│   ├── buyer
+│   ├── seller
+│   ├── checkout
+│   ├── payment
+│   ├── admin
+│   └── notifications
+│
+├── hooks/
+├── services/
+├── context/
+├── routes/
+├── lib/
+├── types/
+└── utils/
 ```
+
+---
+
+# ⚙️ Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/idrisososanwo/AgroMarket2.git
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Create a `.env` file
+
+```env
+VITE_SUPABASE_URL=YOUR_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+```
+
+Run the development server
+
+```bash
+npm run dev
+```
+
+---
+
+# 🧪 Build
+
+```bash
+npm run build
+```
+
+---
+
+# 📌 Roadmap
+
+- AI Product Recommendations
+- Live Chat
+- Farmer Verification
+- Multi-language Support
+- Mobile App
+- Escrow Payments
+- Analytics Improvements
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome.
+
+Fork the repository.
+
+Create a feature branch.
+
+Submit a Pull Request.
+
+---
+
+# 📄 License
+
+MIT License
+
+---
+
+# 👨‍💻 Author
+
+**Idris Ososanwo**
+
+UI/UX Designer • Frontend Developer • Open Source Contributor
+
+GitHub:
+https://github.com/idrisososanwo
