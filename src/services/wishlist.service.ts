@@ -8,6 +8,7 @@ export const wishlistService = {
    * Get wishlist products for a user
    */
   async getWishlist(userId: string): Promise<Product[]> {
+    if (!userId) return [];
     try {
       const { data, error } = await supabase
         .from("wishlist")
@@ -18,7 +19,20 @@ export const wishlistService = {
         return this.getLocalWishlist(userId);
       }
 
-      return data.map((item) => item.products || item).filter(Boolean);
+      const products = data
+        .map((item) => item.products || item)
+        .filter((p): p is Product => Boolean(p && p.id));
+
+      if (products.length > 0) {
+        try {
+          localStorage.setItem(`${WISHLIST_STORAGE_KEY}_${userId}`, JSON.stringify(products));
+        } catch {
+          // ignore storage error
+        }
+        return products;
+      }
+
+      return this.getLocalWishlist(userId);
     } catch {
       return this.getLocalWishlist(userId);
     }
@@ -28,20 +42,20 @@ export const wishlistService = {
    * Add a product to user wishlist
    */
   async addToWishlist(userId: string, product: Product): Promise<boolean> {
+    if (!userId || !product?.id) return false;
+    this.addLocalWishlist(userId, product);
+
     try {
       const { error } = await supabase
         .from("wishlist")
         .insert([{ user_id: userId, product_id: product.id }]);
 
       if (error) {
-        this.addLocalWishlist(userId, product);
-        return true;
+        console.warn("Notice: Saved wishlist item to local storage fallback", error.message);
       }
-
-      this.addLocalWishlist(userId, product);
       return true;
-    } catch {
-      this.addLocalWishlist(userId, product);
+    } catch (err) {
+      console.warn("Notice: Saved wishlist item to local storage fallback", err);
       return true;
     }
   },
@@ -50,23 +64,29 @@ export const wishlistService = {
    * Remove a product from user wishlist
    */
   async removeFromWishlist(userId: string, productId: string): Promise<boolean> {
+    if (!userId || !productId) return false;
+    this.removeLocalWishlist(userId, productId);
+
     try {
-      await supabase
+      const { error } = await supabase
         .from("wishlist")
         .delete()
         .eq("user_id", userId)
         .eq("product_id", productId);
 
-      this.removeLocalWishlist(userId, productId);
+      if (error) {
+        console.warn("Notice: Removed wishlist item from local storage fallback", error.message);
+      }
       return true;
-    } catch {
-      this.removeLocalWishlist(userId, productId);
+    } catch (err) {
+      console.warn("Notice: Removed wishlist item from local storage fallback", err);
       return true;
     }
   },
 
   // Local Storage Fallbacks
   getLocalWishlist(userId: string): Product[] {
+    if (!userId) return [];
     try {
       const raw = localStorage.getItem(`${WISHLIST_STORAGE_KEY}_${userId}`);
       return raw ? JSON.parse(raw) : [];
@@ -76,6 +96,7 @@ export const wishlistService = {
   },
 
   addLocalWishlist(userId: string, product: Product) {
+    if (!userId || !product?.id) return;
     try {
       const current = this.getLocalWishlist(userId);
       if (!current.some((p) => p.id === product.id)) {
@@ -88,6 +109,7 @@ export const wishlistService = {
   },
 
   removeLocalWishlist(userId: string, productId: string) {
+    if (!userId || !productId) return;
     try {
       const current = this.getLocalWishlist(userId);
       const updated = current.filter((p) => p.id !== productId);

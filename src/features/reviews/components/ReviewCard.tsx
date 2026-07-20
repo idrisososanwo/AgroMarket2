@@ -24,10 +24,10 @@ export default function ReviewCard({
     : "Verified Buyer";
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-xs font-sans space-y-3">
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-2xs font-sans space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs shadow-2xs">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs shadow-2xs overflow-hidden">
             {review.user_avatar ? (
               <img
                 src={review.user_avatar}
@@ -80,9 +80,16 @@ export default function ReviewCard({
         </div>
       </div>
 
-      <p className="text-xs text-gray-700 leading-relaxed font-sans pt-1">
-        {review.comment}
-      </p>
+      <div className="pt-1">
+        {review.title && (
+          <h4 className="text-sm font-bold text-gray-900 font-sans mb-1">
+            {review.title}
+          </h4>
+        )}
+        <p className="text-xs text-gray-600 leading-relaxed font-sans">
+          {review.comment}
+        </p>
+      </div>
     </div>
   );
 }

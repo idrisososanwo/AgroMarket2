@@ -26,7 +26,10 @@ export interface ProductQueryParams {
   inStock?: boolean;
   minPrice?: number;
   maxPrice?: number;
-  sortBy?: "price_asc" | "price_desc" | "rating" | "newest";
+  location?: string;
+  minRating?: number;
+  featured?: boolean;
+  sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "best_selling" | "name_asc";
   limit?: number;
   offset?: number;
 }

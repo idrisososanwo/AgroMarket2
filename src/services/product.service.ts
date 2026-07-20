@@ -939,9 +939,21 @@ export const productService = {
         query = query.lte("price", params.maxPrice);
       }
 
+      if (params.location) {
+        query = query.ilike("location", `%${params.location}%`);
+      }
+
+      if (params.minRating !== undefined) {
+        query = query.gte("rating", params.minRating);
+      }
+
+      if (params.featured) {
+        query = query.gte("rating", 4.7);
+      }
+
       if (params.searchQuery) {
         query = query.or(
-          `name.ilike.%${params.searchQuery}%,description.ilike.%${params.searchQuery}%,seller.ilike.%${params.searchQuery}%`
+          `name.ilike.%${params.searchQuery}%,description.ilike.%${params.searchQuery}%,seller.ilike.%${params.searchQuery}%,category.ilike.%${params.searchQuery}%`
         );
       }
 
@@ -955,6 +967,12 @@ export const productService = {
             break;
           case "rating":
             query = query.order("rating", { ascending: false });
+            break;
+          case "best_selling":
+            query = query.order("reviews_count", { ascending: false });
+            break;
+          case "name_asc":
+            query = query.order("name", { ascending: true });
             break;
           case "newest":
           default:
@@ -1008,7 +1026,28 @@ export const productService = {
     }
 
     if (params.inStock !== undefined) {
-      result = result.filter((p) => p.inStock === params.inStock);
+      result = result.filter((p) => (p.inStock !== false && p.in_stock !== false) === params.inStock);
+    }
+
+    if (params.location) {
+      const loc = params.location.toLowerCase();
+      result = result.filter((p) => p.location && p.location.toLowerCase().includes(loc));
+    }
+
+    if (params.minRating !== undefined) {
+      result = result.filter((p) => (p.rating ?? 5.0) >= params.minRating!);
+    }
+
+    if (params.minPrice !== undefined) {
+      result = result.filter((p) => p.price >= params.minPrice!);
+    }
+
+    if (params.maxPrice !== undefined) {
+      result = result.filter((p) => p.price <= params.maxPrice!);
+    }
+
+    if (params.featured) {
+      result = result.filter((p) => p.rating >= 4.7 || (p.stock_quantity ?? 0) >= 50);
     }
 
     if (params.searchQuery) {
@@ -1017,6 +1056,8 @@ export const productService = {
         (p) =>
           p.name.toLowerCase().includes(q) ||
           p.seller.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          (p.location && p.location.toLowerCase().includes(q)) ||
           (p.description && p.description.toLowerCase().includes(q))
       );
     }
@@ -1032,6 +1073,12 @@ export const productService = {
         case "rating":
           result.sort((a, b) => b.rating - a.rating);
           break;
+        case "best_selling":
+          result.sort((a, b) => (b.reviews ?? b.reviews_count ?? 0) - (a.reviews ?? a.reviews_count ?? 0));
+          break;
+        case "name_asc":
+          result.sort((a, b) => a.name.localeCompare(b.name));
+          break;
         case "newest":
         default:
           result.sort(
@@ -1045,6 +1092,7 @@ export const productService = {
 
     return result;
   },
+
 
   /**
    * Fetch a single product by ID

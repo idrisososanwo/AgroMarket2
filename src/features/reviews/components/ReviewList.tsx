@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, MessageSquare, ChevronDown } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, MessageSquare, ChevronDown, SlidersHorizontal } from "lucide-react";
 import RatingSummaryCard from "./RatingSummaryCard";
 import ReviewCard from "./ReviewCard";
 import ReviewFormModal from "./ReviewFormModal";
@@ -14,6 +14,8 @@ interface ReviewListProps {
   product: Product;
 }
 
+type SortOption = "recent" | "highest" | "lowest";
+
 export default function ReviewList({ product }: ReviewListProps) {
   const { user } = useAuth();
   const userId = user?.id || "";
@@ -21,6 +23,7 @@ export default function ReviewList({ product }: ReviewListProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [displayCount, setDisplayCount] = useState(4);
+  const [sortBy, setSortBy] = useState<SortOption>("recent");
 
   // Queries
   const { data: reviews = [], isLoading } = useProductReviews(product.id);
@@ -39,6 +42,21 @@ export default function ReviewList({ product }: ReviewListProps) {
 
   // Check if user already reviewed
   const userExistingReview = reviews.find((r) => r.user_id === userId);
+
+  // Sorting logic
+  const sortedReviews = useMemo(() => {
+    const copy = [...reviews];
+    if (sortBy === "highest") {
+      return copy.sort((a, b) => b.rating - a.rating);
+    }
+    if (sortBy === "lowest") {
+      return copy.sort((a, b) => a.rating - b.rating);
+    }
+    // "recent" default
+    return copy.sort(
+      (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    );
+  }, [reviews, sortBy]);
 
   const handleOpenCreateModal = () => {
     if (!user) {
@@ -74,7 +92,7 @@ export default function ReviewList({ product }: ReviewListProps) {
         { id: review.id, productId: product.id },
         {
           onSuccess: () => {
-            toast.success("Review deleted.");
+            toast.success("Review deleted successfully.");
           },
           onError: (err) => {
             toast.error(err.message || "Failed to delete review.");
@@ -84,12 +102,12 @@ export default function ReviewList({ product }: ReviewListProps) {
     }
   };
 
-  const handleFormSubmit = (rating: number, comment: string) => {
+  const handleFormSubmit = ({ rating, title, comment }: { rating: number; title: string; comment: string }) => {
     if (editingReview) {
       updateReviewMutation.mutate(
         {
           id: editingReview.id,
-          updates: { rating, comment },
+          updates: { rating, title, comment },
         },
         {
           onSuccess: () => {
@@ -107,6 +125,7 @@ export default function ReviewList({ product }: ReviewListProps) {
           product_id: product.id,
           user_id: userId,
           user_name: user?.user_metadata?.full_name || "Verified Agro Buyer",
+          title,
           rating,
           comment,
         },
@@ -133,7 +152,7 @@ export default function ReviewList({ product }: ReviewListProps) {
     }
   };
 
-  const visibleReviews = reviews.slice(0, displayCount);
+  const visibleReviews = sortedReviews.slice(0, displayCount);
   const isSubmitting = createReviewMutation.isPending || updateReviewMutation.isPending;
 
   return (
@@ -162,6 +181,29 @@ export default function ReviewList({ product }: ReviewListProps) {
       {/* Summary Breakdown */}
       <RatingSummaryCard reviews={reviews} overallRating={product.rating} />
 
+      {/* Reviews Controls Bar (Sort Selector) */}
+      {reviews.length > 0 && (
+        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+          <span className="text-xs font-bold text-gray-700 font-sans">
+            Showing {Math.min(displayCount, sortedReviews.length)} of {reviews.length} reviews
+          </span>
+
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="h-3.5 w-3.5 text-gray-400" />
+            <span className="text-xs text-gray-500 font-medium font-sans">Sort by:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 shadow-2xs focus:border-emerald-500 focus:outline-none cursor-pointer font-sans"
+            >
+              <option value="recent">Most Recent</option>
+              <option value="highest">Highest Rating</option>
+              <option value="lowest">Lowest Rating</option>
+            </select>
+          </div>
+        </div>
+      )}
+
       {/* Reviews List */}
       <div className="space-y-4">
         {isLoading ? (
@@ -172,10 +214,20 @@ export default function ReviewList({ product }: ReviewListProps) {
           </div>
         ) : reviews.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-gray-200 bg-gray-50/50 p-10 text-center">
-            <p className="text-sm font-bold text-gray-700">No reviews written yet.</p>
-            <p className="text-xs text-gray-500 mt-1">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+              <MessageSquare className="h-6 w-6" />
+            </div>
+            <p className="text-sm font-bold text-gray-900 font-sans">No reviews written yet.</p>
+            <p className="text-xs text-gray-500 mt-1 font-sans">
               Be the first verified buyer to share feedback on this harvest!
             </p>
+            <button
+              onClick={handleOpenCreateModal}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition-all font-sans cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Write the First Review</span>
+            </button>
           </div>
         ) : (
           visibleReviews.map((rev) => (
@@ -191,13 +243,13 @@ export default function ReviewList({ product }: ReviewListProps) {
       </div>
 
       {/* Pagination / View More */}
-      {reviews.length > displayCount && (
+      {sortedReviews.length > displayCount && (
         <div className="text-center pt-2">
           <button
             onClick={() => setDisplayCount((prev) => prev + 4)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-5 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-5 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer font-sans"
           >
-            <span>Load More Reviews ({reviews.length - displayCount} remaining)</span>
+            <span>Load More Reviews ({sortedReviews.length - displayCount} remaining)</span>
             <ChevronDown className="h-4 w-4" />
           </button>
         </div>

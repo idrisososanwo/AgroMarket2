@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X, Send, Loader2 } from "lucide-react";
 import RatingStars from "./RatingStars";
 import type { Review } from "../../../types";
@@ -6,35 +6,25 @@ import type { Review } from "../../../types";
 interface ReviewFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (rating: number, comment: string) => void;
+  onSubmit: (data: { rating: number; title: string; comment: string }) => void;
   isSubmitting?: boolean;
   reviewToEdit?: Review | null;
 }
 
-export default function ReviewFormModal({
-  isOpen,
+function ReviewFormContent({
   onClose,
   onSubmit,
   isSubmitting = false,
   reviewToEdit,
-}: ReviewFormModalProps) {
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState("");
-
-  useEffect(() => {
-    if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRating(reviewToEdit?.rating ?? 5);
-      setComment(reviewToEdit?.comment ?? "");
-    }
-  }, [isOpen, reviewToEdit]);
-
-
-  if (!isOpen) return null;
+}: Omit<ReviewFormModalProps, "isOpen">) {
+  const [rating, setRating] = useState(reviewToEdit?.rating ?? 5);
+  const [title, setTitle] = useState(reviewToEdit?.title ?? "");
+  const [comment, setComment] = useState(reviewToEdit?.comment ?? "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(rating, comment);
+    if (!comment.trim()) return;
+    onSubmit({ rating, title: title.trim() || "Harvest Product Review", comment: comment.trim() });
   };
 
   return (
@@ -52,11 +42,11 @@ export default function ReviewFormModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Rating Stars Selection */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-              Rating (1 to 5 Stars) *
+              Rating Score (1 to 5 Stars) *
             </label>
             <RatingStars
               rating={rating}
@@ -66,23 +56,38 @@ export default function ReviewFormModal({
             />
           </div>
 
+          {/* Review Headline / Title */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+              Review Title *
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Fresh tomatoes, excellent packaging & fast delivery!"
+              className="w-full rounded-xl border border-gray-200 p-3 text-xs text-gray-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-sans"
+              required
+            />
+          </div>
+
           {/* Comment Area */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
-              Your Written Review *
+              Detailed Written Review *
             </label>
             <textarea
               rows={4}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Describe crop freshness, packaging quality, taste, and delivery experience..."
+              placeholder="Describe crop freshness, taste, sizing, packaging quality, and overall delivery satisfaction..."
               className="w-full rounded-xl border border-gray-200 p-3 text-xs text-gray-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-sans"
               required
             />
           </div>
 
           {/* Submit */}
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
             <button
               type="button"
               onClick={onClose}
@@ -93,7 +98,7 @@ export default function ReviewFormModal({
 
             <button
               type="submit"
-              disabled={isSubmitting || !comment.trim()}
+              disabled={isSubmitting || !title.trim() || !comment.trim()}
               className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 transition-all cursor-pointer"
             >
               {isSubmitting ? (
@@ -107,5 +112,25 @@ export default function ReviewFormModal({
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ReviewFormModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isSubmitting = false,
+  reviewToEdit,
+}: ReviewFormModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <ReviewFormContent
+      key={reviewToEdit?.id || "new-review"}
+      onClose={onClose}
+      onSubmit={onSubmit}
+      isSubmitting={isSubmitting}
+      reviewToEdit={reviewToEdit}
+    />
   );
 }

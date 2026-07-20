@@ -5,6 +5,7 @@ import Marketplace from "../pages/Marketplace";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Cart from "../pages/Cart";
+import WishlistPage from "../pages/WishlistPage";
 import Checkout from "../pages/Checkout";
 import Orders from "../pages/Orders";
 import PaymentPage from "../pages/PaymentPage";
@@ -12,6 +13,7 @@ import BuyerDashboard from "../pages/BuyerDashboard";
 import SellerDashboard from "../pages/SellerDashboard";
 import AdminDashboard from "../pages/AdminDashboard";
 import ProductDetails from "../pages/ProductDetails";
+import SellerProfile from "../pages/SellerProfile";
 import NotFound from "../pages/NotFound";
 
 import ProtectedRoute from "./ProtectedRoute";
@@ -20,7 +22,6 @@ import PublicRoute from "./PublicRoute";
 export { ROUTES };
 
 export default function AppRoutes() {
-
   return (
     <BrowserRouter>
       <Routes>
@@ -30,6 +31,9 @@ export default function AppRoutes() {
         <Route path={ROUTES.CART} element={<Cart />} />
         <Route path={ROUTES.PRODUCT_DETAILS} element={<ProductDetails />} />
         <Route path="/products/:id" element={<ProductDetails />} />
+        <Route path={ROUTES.SELLER_PROFILE} element={<SellerProfile />} />
+        <Route path="/seller/:sellerId" element={<SellerProfile />} />
+
 
         {/* Routes restricted to unauthenticated users */}
         <Route
@@ -50,6 +54,14 @@ export default function AppRoutes() {
         />
 
         {/* Authenticated user routes */}
+        <Route
+          path={ROUTES.WISHLIST}
+          element={
+            <ProtectedRoute>
+              <WishlistPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path={ROUTES.CHECKOUT}
           element={
@@ -117,5 +129,3 @@ export default function AppRoutes() {
     </BrowserRouter>
   );
 }
-
-

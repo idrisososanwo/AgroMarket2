@@ -1,48 +1,41 @@
 import { useState } from "react";
 import Layout from "../components/layout/Layout";
-import { formatPrice } from "../utils/formatters";
 import { useAuth } from "../context/AuthContext";
-import { Package, Heart, User, Sparkles, ShoppingBag, ChevronRight, Clock, CheckCircle, Wallet } from "lucide-react";
+import { Package, Heart, User, Sparkles, ShoppingBag, ChevronRight, Wallet, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
-import BuyerStats from "../features/buyer/components/BuyerStats";
 import WishlistGrid from "../features/buyer/components/WishlistGrid";
 import BuyerProfileForm from "../features/buyer/components/BuyerProfileForm";
 import ProductRecommendations from "../features/buyer/components/ProductRecommendations";
 import PaymentHistoryTable from "../features/payment/components/PaymentHistoryTable";
+import BuyerAnalyticsView from "../features/buyer/components/BuyerAnalyticsView";
+import OrderCard from "../features/orders/components/OrderCard";
+import OrderDetailModal from "../features/orders/components/OrderDetailModal";
 import { useBuyerOrders } from "../hooks/useOrders";
 import { useWishlist } from "../hooks/useWishlist";
 import { usePaymentHistory } from "../hooks/payment/useStellarPayment";
+import { useBuyerAnalytics } from "../hooks/useAnalytics";
+import type { Order } from "../types";
 
 export default function BuyerDashboard() {
   const { user } = useAuth();
   const buyerId = user?.id || "";
   const name = user?.user_metadata?.full_name || "Valued Buyer";
 
-  const [activeTab, setActiveTab] = useState<"overview" | "wishlist" | "payments" | "recommendations" | "profile">("overview");
+  const [activeTab, setActiveTab] = useState<"analytics" | "orders" | "wishlist" | "payments" | "recommendations" | "profile">("analytics");
+  const [orderToView, setOrderToView] = useState<Order | null>(null);
 
   // Queries
-  const { data: buyerOrders = [], isLoading: isLoadingOrders } = useBuyerOrders(buyerId);
-  const { data: wishlistItems = [], isLoading: isLoadingWishlist } = useWishlist(buyerId);
-  const { data: paymentRecords = [], isLoading: isLoadingPayments } = usePaymentHistory(buyerId);
+  const { data: buyerOrders = [] } = useBuyerOrders(buyerId);
+  const { data: wishlistItems = [] } = useWishlist(buyerId);
+  const { data: paymentRecords = [] } = usePaymentHistory(buyerId);
+  const {
+    data: buyerAnalytics,
+    isLoading: isLoadingAnalytics,
+    isError: isAnalyticsError,
+    refetch: refetchAnalytics,
+  } = useBuyerAnalytics(buyerId);
 
-  // Stats
-  const totalOrders = buyerOrders.length > 0 ? buyerOrders.length : 3;
-  const pendingOrders = buyerOrders.filter((o) => o.status === "Pending" || o.status === "Processing").length || 2;
-  const completedOrders = buyerOrders.filter((o) => o.status === "Delivered").length || 1;
   const wishlistCount = wishlistItems.length;
-
-  const stats = {
-    totalOrders,
-    pendingOrders,
-    completedOrders,
-    wishlistCount,
-  };
-
-  const MOCK_RECENT_PURCHASES = buyerOrders.length > 0 ? buyerOrders : [
-    { id: "AG-103", date: "July 19, 2026", total: 11.77, status: "Pending", itemsCount: 1 },
-    { id: "AG-102", date: "July 18, 2026", total: 9.67, status: "Shipped", itemsCount: 1 },
-    { id: "AG-101", date: "July 15, 2026", total: 94.50, status: "Delivered", itemsCount: 2 },
-  ];
 
   return (
     <Layout>
@@ -57,12 +50,12 @@ export default function BuyerDashboard() {
               Welcome back, {name}!
             </h1>
             <p className="text-sm text-gray-500 font-sans mt-0.5">
-              Monitor your crop orders, track Stellar XLM transactions, manage your wishlist, and update delivery settings.
+              Monitor your crop spending, track Stellar XLM payments, manage saved produce, and update profile settings.
             </p>
           </div>
 
           <Link
-            to="/"
+            to="/marketplace"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition-all font-sans cursor-pointer self-start md:self-auto"
           >
             <ShoppingBag className="h-4 w-4" />
@@ -73,7 +66,8 @@ export default function BuyerDashboard() {
         {/* Navigation Tabs */}
         <div className="mb-8 flex items-center gap-2 overflow-x-auto border-b border-gray-100 pb-2">
           {[
-            { id: "overview", label: "Overview & Orders", icon: Package },
+            { id: "analytics", label: "Analytics & Spending", icon: BarChart3 },
+            { id: "orders", label: `Orders (${buyerOrders.length})`, icon: Package },
             { id: "wishlist", label: `Wishlist (${wishlistCount})`, icon: Heart },
             { id: "payments", label: `Stellar Payments (${paymentRecords.length})`, icon: Wallet },
             { id: "recommendations", label: "Recommended Produce", icon: Sparkles },
@@ -97,117 +91,85 @@ export default function BuyerDashboard() {
           })}
         </div>
 
-        {/* TAB 1: OVERVIEW & ORDERS */}
-        {activeTab === "overview" && (
-          <div className="space-y-10">
-            {/* Dashboard Statistics */}
-            <section>
-              <BuyerStats stats={stats} isLoading={isLoadingOrders} />
-            </section>
+        {/* TAB 1: ANALYTICS & SPENDING */}
+        {activeTab === "analytics" && (
+          <BuyerAnalyticsView
+            analytics={buyerAnalytics}
+            isLoading={isLoadingAnalytics}
+            isError={isAnalyticsError}
+            onRetry={refetchAnalytics}
+          />
+        )}
 
-            {/* Recent Orders List */}
-            <section className="rounded-3xl border border-gray-100 bg-white p-6 sm:p-8 shadow-xs">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-6">
-                <h3 className="text-xl font-extrabold text-gray-900 font-sans flex items-center gap-2">
-                  <Package className="h-5 w-5 text-emerald-600" />
-                  <span>Recent Produce Orders</span>
-                </h3>
+        {/* TAB 2: ORDERS */}
+        {activeTab === "orders" && (
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-extrabold text-gray-900 font-sans flex items-center gap-2">
+                <Package className="h-5 w-5 text-emerald-600" />
+                <span>Your Produce Orders</span>
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
+                  {buyerOrders.length}
+                </span>
+              </h2>
+
+              <Link
+                to="/marketplace"
+                className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-sans"
+              >
+                <span>Continue Shopping</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            {buyerOrders.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-gray-200 bg-gray-50/50 p-12 text-center font-sans space-y-3">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                  <Package className="h-7 w-7" />
+                </div>
+                <h3 className="text-base font-extrabold text-gray-900">No Orders Placed Yet</h3>
+                <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                  Explore fresh farm produce on the marketplace and place your first harvest order.
+                </p>
                 <Link
-                  to="/orders"
-                  className="text-xs font-bold text-emerald-600 hover:text-emerald-700 font-sans flex items-center gap-1"
+                  to="/marketplace"
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 font-sans"
                 >
-                  <span>View All Orders</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <span>Start Shopping</span>
                 </Link>
               </div>
-
-              <div className="divide-y divide-gray-100">
-                {MOCK_RECENT_PURCHASES.map((order) => (
-                  <div
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {buyerOrders.map((order) => (
+                  <OrderCard
                     key={order.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between py-4 gap-4"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs">
-                        #{order.id.slice(-3)}
-                      </div>
-                      <div>
-                        <span className="font-bold text-gray-900 block font-sans text-sm">
-                          Order {order.id}
-                        </span>
-                        <span className="text-2xs text-gray-400 font-sans">{order.date}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end gap-6 font-sans text-xs">
-                      <span className="font-extrabold text-gray-900">{formatPrice(order.total)}</span>
-
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-2xs font-extrabold ${
-                          order.status === "Delivered"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}
-                      >
-                        {order.status === "Delivered" ? (
-                          <CheckCircle className="h-3 w-3" />
-                        ) : (
-                          <Clock className="h-3 w-3" />
-                        )}
-                        {order.status}
-                      </span>
-                    </div>
-                  </div>
+                    order={order}
+                    onViewDetails={() => setOrderToView(order)}
+                  />
                 ))}
               </div>
-            </section>
-
-            {/* Recommendations Teaser */}
-            <section>
-              <ProductRecommendations />
-            </section>
-          </div>
-        )}
-
-        {/* TAB 2: WISHLIST */}
-        {activeTab === "wishlist" && (
-          <section className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-extrabold text-gray-900 font-sans flex items-center gap-2">
-                <Heart className="h-5 w-5 text-rose-500" />
-                <span>Saved Wishlist Produce</span>
-              </h2>
-            </div>
-            <WishlistGrid products={wishlistItems} isLoading={isLoadingWishlist} />
+            )}
           </section>
         )}
 
-        {/* TAB 3: STELLAR PAYMENTS */}
-        {activeTab === "payments" && (
-          <section className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-extrabold text-gray-900 font-sans flex items-center gap-2">
-                <Wallet className="h-5 w-5 text-emerald-600" />
-                <span>Stellar XLM Payment History</span>
-              </h2>
-            </div>
-            <PaymentHistoryTable records={paymentRecords} isLoading={isLoadingPayments} />
-          </section>
-        )}
+        {/* TAB 3: WISHLIST */}
+        {activeTab === "wishlist" && <WishlistGrid products={wishlistItems} />}
 
-        {/* TAB 4: RECOMMENDATIONS */}
-        {activeTab === "recommendations" && (
-          <section>
-            <ProductRecommendations />
-          </section>
-        )}
+        {/* TAB 4: PAYMENTS */}
+        {activeTab === "payments" && <PaymentHistoryTable records={paymentRecords} />}
 
-        {/* TAB 5: BUYER PROFILE FORM */}
-        {activeTab === "profile" && (
-          <section className="max-w-3xl">
-            <BuyerProfileForm />
-          </section>
-        )}
+        {/* TAB 5: RECOMMENDATIONS */}
+        {activeTab === "recommendations" && <ProductRecommendations />}
+
+        {/* TAB 6: PROFILE */}
+        {activeTab === "profile" && <BuyerProfileForm />}
+
+        {/* Order Details Modal */}
+        <OrderDetailModal
+          order={orderToView}
+          onClose={() => setOrderToView(null)}
+        />
+
       </div>
     </Layout>
   );

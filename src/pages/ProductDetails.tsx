@@ -2,10 +2,15 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Layout from "../components/layout/Layout";
 import ProductCard from "../components/common/ProductCard";
-import ProductSkeleton from "../components/common/ProductSkeleton";
 import ErrorState from "../components/common/ErrorState";
+
+
+
+
 import ProductImage from "../components/common/ProductImage";
+import { ProductDetailsSkeleton } from "../components/common/GenericSkeleton";
 import { formatPrice } from "../utils/formatters";
+
 
 
 import {
@@ -14,19 +19,22 @@ import {
   ShieldCheck,
   ShoppingCart,
   ArrowLeft,
-  Store,
   MapPin,
+
   CheckCircle,
   XCircle,
   Plus,
   Minus,
+  Heart,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import { useProduct, useProducts } from "../hooks/useProducts";
 import { useAddToCart } from "../hooks/useCart";
+import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "../hooks/useWishlist";
 import ReviewList from "../features/reviews/components/ReviewList";
 import SellerRatingBadge from "../features/reviews/components/SellerRatingBadge";
+
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -49,11 +57,50 @@ export default function ProductDetails() {
 
   // Mutations
   const addToCartMutation = useAddToCart();
+  const addToWishlistMutation = useAddToWishlist();
+  const removeFromWishlistMutation = useRemoveFromWishlist();
+
+  // Wishlist
+  const { data: wishlist = [] } = useWishlist(user?.id);
+  const isInWishlist = product ? wishlist.some((p) => p.id === product.id) : false;
 
   const isAvailable = product?.inStock !== false && product?.in_stock !== false;
 
   const handleQuantityChange = (amount: number) => {
     setQuantity((prev) => Math.max(1, prev + amount));
+  };
+
+  const handleToggleWishlist = () => {
+    if (!user) {
+      toast.info("Please sign in to save items to your wishlist", {
+        action: {
+          label: "Sign In",
+          onClick: () => navigate("/login"),
+        },
+      });
+      return;
+    }
+    if (!product) return;
+
+    if (isInWishlist) {
+      removeFromWishlistMutation.mutate(
+        { userId: user.id, productId: product.id },
+        {
+          onSuccess: () => {
+            toast.success(`Removed ${product.name} from wishlist.`);
+          },
+        }
+      );
+    } else {
+      addToWishlistMutation.mutate(
+        { userId: user.id, product },
+        {
+          onSuccess: () => {
+            toast.success(`Added ${product.name} to wishlist!`);
+          },
+        }
+      );
+    }
   };
 
   const handleAddToCart = () => {
@@ -80,25 +127,27 @@ export default function ProductDetails() {
       },
       {
         onSuccess: () => {
-          toast.success(`Added ${quantity} ${product.unit}(s) of ${product.name} to cart!`);
+          toast.success(`Added ${quantity} × ${product.name} to cart!`);
         },
         onError: (err: Error) => {
-          toast.error(err.message || "Failed to add product to cart.");
+          toast.error(err.message || "Could not add item to cart.");
         },
+
       }
     );
   };
 
-
   if (isLoading) {
     return (
       <Layout>
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <ProductSkeleton count={1} />
-        </div>
+        <ProductDetailsSkeleton />
       </Layout>
     );
   }
+
+
+
+
 
   if (isError || !product) {
     return (
@@ -218,22 +267,25 @@ export default function ProductDetails() {
                   "Freshly harvested agricultural product sourced directly from local producers. Quality tested and handled under strict hygiene standards."}
               </p>
 
-              {/* Seller Information Card */}
-              <div className="mt-6 rounded-2xl border border-gray-100 bg-emerald-50/30 p-4 sm:p-5 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-lg font-sans">
-                    <Store className="h-6 w-6" />
+              {/* Seller Information Box */}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <Link
+                  to={`/seller/${encodeURIComponent(product.seller_id || product.seller)}`}
+                  className="flex items-center gap-3 group/seller"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800 font-extrabold font-sans border border-emerald-200 group-hover/seller:bg-emerald-200 transition-colors">
+                    {product.seller ? product.seller.substring(0, 2).toUpperCase() : "AG"}
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-gray-900 font-sans">
-                      {product.seller || "Green Valley Organic Farm"}
+                    <h4 className="text-sm font-bold text-gray-900 group-hover/seller:text-emerald-700 transition-colors font-sans flex items-center gap-1">
+                      <span>{product.seller || "Green Valley Organic Farm"}</span>
                     </h4>
                     <p className="text-xs text-gray-500 font-sans flex items-center gap-1 mt-0.5">
                       <MapPin className="h-3.5 w-3.5 text-emerald-600" />
                       <span>{product.location || "Verified AgroMarket Supplier"}</span>
                     </p>
                   </div>
-                </div>
+                </Link>
 
                 <SellerRatingBadge
                   sellerName={product.seller || "Organic Farm Producer"}
@@ -241,6 +293,7 @@ export default function ProductDetails() {
                   totalReviews={product.reviews || 24}
                 />
               </div>
+
 
               {/* Trust Badges */}
               <div className="mt-6 grid grid-cols-2 gap-4 border-t border-b border-gray-100 py-4">
@@ -296,10 +349,23 @@ export default function ProductDetails() {
                     {addToCartMutation.isPending
                       ? "Adding to Cart..."
                       : `Add ${quantity} to Cart • ${formatPrice(product.price * quantity)}`}
-
                   </span>
                 </button>
+
+                <button
+                  onClick={handleToggleWishlist}
+                  title={isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+                  aria-label={isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+                  className={`flex items-center justify-center rounded-2xl border px-5 py-4 transition-all cursor-pointer font-sans ${
+                    isInWishlist
+                      ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-rose-300 hover:text-rose-600 hover:bg-rose-50/50"
+                  }`}
+                >
+                  <Heart className={`h-5 w-5 ${isInWishlist ? "fill-rose-500 text-rose-500" : ""}`} />
+                </button>
               </div>
+
             </div>
           </div>
         </div>
