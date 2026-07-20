@@ -1,4 +1,7 @@
 import { Package, Truck, CheckCircle2, Clock, XCircle, Eye } from "lucide-react";
+import ProductImage from "../../../components/common/ProductImage";
+import { formatPrice } from "../../../utils/formatters";
+
 import type { Order } from "../../../types";
 
 interface OrderCardProps {
@@ -74,22 +77,26 @@ export default function OrderCard({ order, onViewDetails }: OrderCardProps) {
         {order.items.map((item, idx) => (
           <div key={idx} className="flex items-center justify-between text-xs text-gray-700">
             <div className="flex items-center gap-2 truncate">
-              <span className="text-lg select-none">{item.image || "🌾"}</span>
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-50 border border-gray-100 overflow-hidden">
+                <ProductImage src={item.image} alt={item.name} className="h-full w-full object-cover" />
+              </div>
               <span className="font-semibold truncate">{item.name}</span>
               <span className="text-2xs text-gray-400">×{item.qty ?? item.quantity ?? 1}</span>
             </div>
             <span className="font-bold text-gray-900">
-              ${((item.qty ?? item.quantity ?? 1) * item.price).toFixed(2)}
+              {formatPrice((item.qty ?? item.quantity ?? 1) * item.price)}
             </span>
           </div>
         ))}
+
       </div>
 
       {/* Footer Details */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-gray-100 pt-3">
         <div className="text-xs">
           <span className="text-gray-400">Total Amount: </span>
-          <span className="text-sm font-extrabold text-emerald-700">${order.total.toFixed(2)}</span>
+          <span className="text-sm font-extrabold text-emerald-700">{formatPrice(order.total)}</span>
+
           <span className="text-2xs text-gray-400 block font-mono">
             Tracking: {order.tracking || order.tracking_number}
           </span>

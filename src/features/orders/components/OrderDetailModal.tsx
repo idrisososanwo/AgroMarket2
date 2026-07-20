@@ -1,4 +1,7 @@
 import { useState } from "react";
+import ProductImage from "../../../components/common/ProductImage";
+import { formatPrice } from "../../../utils/formatters";
+
 import { X, Package, MapPin, CreditCard, Ban } from "lucide-react";
 import OrderTimeline from "./OrderTimeline";
 import type { Order, OrderStatus } from "../../../types";
@@ -105,36 +108,40 @@ export default function OrderDetailModal({ order, onClose }: OrderDetailModalPro
             {order.items.map((item, idx) => (
               <div key={idx} className="py-2.5 flex items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl select-none">{item.image || "🌾"}</span>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 border border-gray-100 overflow-hidden">
+                    <ProductImage src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                  </div>
                   <div>
                     <span className="font-bold text-gray-900 block">{item.name}</span>
                     <span className="text-2xs text-gray-500">
-                      Qty: {item.qty ?? item.quantity ?? 1} × ${item.price.toFixed(2)}
+                      Qty: {item.qty ?? item.quantity ?? 1} × {formatPrice(item.price)}
                     </span>
                   </div>
                 </div>
                 <span className="font-extrabold text-gray-900">
-                  ${((item.qty ?? item.quantity ?? 1) * item.price).toFixed(2)}
+                  {formatPrice((item.qty ?? item.quantity ?? 1) * item.price)}
                 </span>
               </div>
             ))}
+
           </div>
 
           {/* Pricing Totals */}
           <div className="border-t border-gray-200/60 pt-3 space-y-1.5 text-xs text-gray-600">
             <div className="flex justify-between">
               <span>Delivery Cost:</span>
-              <span className="font-bold text-gray-900">${(order.deliveryCost || 0).toFixed(2)}</span>
+              <span className="font-bold text-gray-900">{formatPrice(order.deliveryCost || 0)}</span>
             </div>
             <div className="flex justify-between">
               <span>Taxes:</span>
-              <span className="font-bold text-gray-900">${(order.tax || 0).toFixed(2)}</span>
+              <span className="font-bold text-gray-900">{formatPrice(order.tax || 0)}</span>
             </div>
             <div className="flex justify-between text-sm font-extrabold text-gray-900 pt-1">
               <span>Grand Total:</span>
-              <span className="text-emerald-700">${order.total.toFixed(2)}</span>
+              <span className="text-emerald-700">{formatPrice(order.total)}</span>
             </div>
           </div>
+
         </div>
 
         {/* Shipping & Payment Meta */}

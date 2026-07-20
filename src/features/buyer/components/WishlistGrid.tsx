@@ -1,4 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
+import ProductImage from "../../../components/common/ProductImage";
+import { formatPrice } from "../../../utils/formatters";
+
 import { Heart, ShoppingCart, Trash2, ArrowRight } from "lucide-react";
 import type { Product } from "../../../types";
 import { useAuth } from "../../../context/AuthContext";
@@ -99,13 +102,10 @@ export default function WishlistGrid({ products, isLoading = false }: WishlistGr
           className="flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-5 shadow-xs transition-all hover:shadow-md"
         >
           <div className="flex gap-4">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-4xl border border-gray-100">
-              {product.image.startsWith("data:") || product.image.startsWith("http") ? (
-                <img src={product.image} alt={product.name} className="h-full w-full object-cover rounded-xl" />
-              ) : (
-                <span>{product.image || "🌾"}</span>
-              )}
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-emerald-50 border border-gray-100 overflow-hidden">
+              <ProductImage src={product.image} alt={product.name} className="h-full w-full object-cover" />
             </div>
+
 
             <div className="flex-1 space-y-1">
               <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-2xs font-bold text-emerald-800 font-sans capitalize">
@@ -116,8 +116,9 @@ export default function WishlistGrid({ products, isLoading = false }: WishlistGr
               </h4>
               <p className="text-xs text-gray-500 font-sans">{product.seller}</p>
               <div className="text-sm font-extrabold text-emerald-700 font-sans pt-1">
-                ${product.price.toFixed(2)} / {product.unit || "kg"}
+                {formatPrice(product.price)} / {product.unit || "kg"}
               </div>
+
             </div>
           </div>
 

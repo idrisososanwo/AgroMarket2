@@ -8,6 +8,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "../../../utils/formatters";
+
 import WalletConnectModal from "./WalletConnectModal";
 import { useXlmExchangeRate, useExecuteStellarPayment } from "../../../hooks/payment/useStellarPayment";
 import { stellarService } from "../../../services/payment/stellar.service";
@@ -160,11 +162,10 @@ export default function StellarPaymentModal({
             <p className="text-xs text-gray-500">
               Your Stellar XLM payment for Order #{order.id} has been verified on Horizon.
             </p>
-
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 text-left space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-500">Amount Paid:</span>
-                <span className="font-extrabold text-emerald-800">{amountXlm} XLM (${amountUsd.toFixed(2)})</span>
+                <span className="font-extrabold text-emerald-800">{amountXlm} XLM ({formatPrice(amountUsd)})</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Network:</span>
@@ -203,7 +204,7 @@ export default function StellarPaymentModal({
                 {amountXlm} <span className="text-lg">XLM</span>
               </div>
               <span className="text-xs text-gray-500 block mt-1">
-                Equivalent to ${amountUsd.toFixed(2)} USD (@ ${exchangeRate}/XLM)
+                Equivalent to {formatPrice(amountUsd)} (1 XLM ≈ ₦200)
               </span>
             </div>
 

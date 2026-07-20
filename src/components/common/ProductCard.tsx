@@ -4,6 +4,9 @@ import type { Product } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 import { useAddToCart } from "../../hooks/useCart";
 import { toast } from "sonner";
+import ProductImage from "./ProductImage";
+import { formatPrice } from "../../utils/formatters";
+
 
 interface ProductCardProps {
   product: Product;
@@ -57,10 +60,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div>
         {/* Product Image Header */}
         <Link to={`/product/${product.id}`} className="block">
-          <div className="relative mb-4 flex h-48 w-full items-center justify-center rounded-xl bg-emerald-50/50 p-4 transition-colors group-hover:bg-emerald-100/40">
-            <span className="text-6xl transition-transform duration-300 group-hover:scale-110 select-none">
-              {product.image || "🌾"}
-            </span>
+          <div className="relative mb-4 flex h-48 w-full items-center justify-center rounded-xl bg-emerald-50/50 overflow-hidden transition-colors group-hover:bg-emerald-100/40">
+            <ProductImage
+              src={product.image}
+              alt={product.name}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+
 
             {/* Category Tag */}
             <span className="absolute top-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-emerald-800 shadow-sm backdrop-blur-xs capitalize font-sans">
@@ -117,9 +123,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div>
           <span className="text-xs text-gray-400 font-sans block">Price</span>
           <div className="flex items-baseline gap-1">
-            <span className="text-xl font-extrabold text-emerald-700 font-sans">
-              ${product.price.toFixed(2)}
+            <span className="text-lg font-extrabold text-emerald-700 font-sans">
+              {formatPrice(product.price)}
             </span>
+
             <span className="text-xs text-gray-500 font-sans">/ {product.unit || "kg"}</span>
           </div>
         </div>

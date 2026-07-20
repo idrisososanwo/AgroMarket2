@@ -1,3 +1,6 @@
+import ProductImage from "../../../components/common/ProductImage";
+import { formatPrice } from "../../../utils/formatters";
+
 import { Truck, ShieldCheck } from "lucide-react";
 import type { CartItem } from "../../../types";
 
@@ -27,26 +30,29 @@ export default function OrderSummaryCard({
         {items.map((item) => (
           <div key={item.id} className="pt-2 flex items-center justify-between gap-3 text-xs font-sans">
             <div className="flex items-center gap-2.5 truncate">
-              <span className="text-xl select-none">{item.image || "🌾"}</span>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 border border-gray-100 overflow-hidden">
+                <ProductImage src={item.image} alt={item.name} className="h-full w-full object-cover" />
+              </div>
               <div className="truncate">
                 <span className="font-bold text-gray-900 truncate block">{item.name}</span>
                 <span className="text-2xs text-gray-400">
-                  Qty: {item.quantity} × ${item.price.toFixed(2)}
+                  Qty: {item.quantity} × {formatPrice(item.price)}
                 </span>
               </div>
             </div>
             <span className="font-extrabold text-gray-900 shrink-0">
-              ${(item.price * item.quantity).toFixed(2)}
+              {formatPrice(item.price * item.quantity)}
             </span>
           </div>
         ))}
+
       </div>
 
       {/* Price breakdown */}
       <div className="space-y-3 text-xs font-sans border-t border-gray-100 pt-4">
         <div className="flex justify-between text-gray-600">
           <span>Items Subtotal</span>
-          <span className="font-bold text-gray-900">${subtotal.toFixed(2)}</span>
+          <span className="font-bold text-gray-900">{formatPrice(subtotal)}</span>
         </div>
 
         <div className="flex justify-between text-gray-600">
@@ -54,20 +60,21 @@ export default function OrderSummaryCard({
             <Truck className="h-3.5 w-3.5 text-emerald-600" /> Delivery Fee
           </span>
           <span className="font-bold text-gray-900">
-            {deliveryFee === 0 ? "FREE" : `$${deliveryFee.toFixed(2)}`}
+            {deliveryFee === 0 ? "FREE" : formatPrice(deliveryFee)}
           </span>
         </div>
 
         <div className="flex justify-between text-gray-600">
           <span>Estimated Taxes ({(taxRate * 100).toFixed(0)}%)</span>
-          <span className="font-bold text-gray-900">${tax.toFixed(2)}</span>
+          <span className="font-bold text-gray-900">{formatPrice(tax)}</span>
         </div>
 
         <div className="border-t border-gray-100 pt-3 flex justify-between text-base font-extrabold text-gray-900">
           <span>Grand Total</span>
-          <span className="text-emerald-700">${grandTotal.toFixed(2)}</span>
+          <span className="text-emerald-700">{formatPrice(grandTotal)}</span>
         </div>
       </div>
+
 
       <div className="mt-5 flex items-center justify-center gap-2 text-2xs font-semibold text-gray-400 font-sans">
         <ShieldCheck className="h-4 w-4 text-emerald-600" />

@@ -16,7 +16,17 @@ interface ProductFormModalProps {
   productToEdit?: Product | null;
 }
 
-const DEFAULT_EMOJIS = ["🌾", "🍅", "🍎", "🥚", "🌻", "🌽", "🥔", "🥕", "🍓", "🥛", "🍯", "🥬"];
+const PRESET_AGRI_IMAGES = [
+  { label: "Basmati Rice", url: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80" },
+  { label: "Vine Tomatoes", url: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=800&q=80" },
+  { label: "Honey Apples", url: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=800&q=80" },
+  { label: "Farm Eggs", url: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=800&q=80" },
+  { label: "Sweetcorn", url: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=800&q=80" },
+  { label: "White Yam", url: "https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=800&q=80" },
+  { label: "Bell Peppers", url: "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?auto=format&fit=crop&w=800&q=80" },
+  { label: "Strawberries", url: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=800&q=80" },
+  { label: "Cassava Roots", url: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80" },
+];
 
 export default function ProductFormModal({
   isOpen,
@@ -25,7 +35,8 @@ export default function ProductFormModal({
 }: ProductFormModalProps) {
   const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string>("🌾");
+  const defaultImg = PRESET_AGRI_IMAGES[0].url;
+  const [previewImage, setPreviewImage] = useState<string>(defaultImg);
 
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
@@ -48,7 +59,7 @@ export default function ProductFormModal({
       price: 0,
       stock_quantity: 10,
       status: "Active",
-      image: "🌾",
+      image: defaultImg,
       location: "",
     },
   });
@@ -62,11 +73,11 @@ export default function ProductFormModal({
         price: productToEdit.price,
         stock_quantity: productToEdit.stock_quantity ?? 10,
         status: productToEdit.inStock !== false ? "Active" : "Draft",
-        image: productToEdit.image || "🌾",
+        image: productToEdit.image || defaultImg,
         location: productToEdit.location || "",
       });
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPreviewImage(productToEdit.image || "🌾");
+      setPreviewImage(productToEdit.image || defaultImg);
     } else {
       reset({
         name: "",
@@ -75,12 +86,13 @@ export default function ProductFormModal({
         price: 0,
         stock_quantity: 10,
         status: "Active",
-        image: "🌾",
+        image: defaultImg,
         location: "",
       });
-      setPreviewImage("🌾");
+      setPreviewImage(defaultImg);
     }
-  }, [productToEdit, reset, isOpen]);
+  }, [productToEdit, reset, isOpen, defaultImg]);
+
 
   if (!isOpen) return null;
 
@@ -102,10 +114,11 @@ export default function ProductFormModal({
     }
   };
 
-  const handleEmojiSelect = (emoji: string) => {
-    setValue("image", emoji, { shouldValidate: true });
-    setPreviewImage(emoji);
+  const handlePresetSelect = (imageUrl: string) => {
+    setValue("image", imageUrl, { shouldValidate: true });
+    setPreviewImage(imageUrl);
   };
+
 
   const onSubmit = (data: ProductFormData) => {
     const sellerName =
@@ -343,26 +356,28 @@ export default function ProductFormModal({
                   </label>
 
                   <div>
-                    <span className="text-2xs font-semibold text-gray-400 uppercase tracking-wider block mb-1 font-sans">
-                      Or pick quick icon preset:
+                    <span className="text-2xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5 font-sans">
+                      Or select a high-quality agriculture photo preset:
                     </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {DEFAULT_EMOJIS.map((emoji) => (
+                    <div className="flex flex-wrap gap-2">
+                      {PRESET_AGRI_IMAGES.map((preset) => (
                         <button
-                          key={emoji}
+                          key={preset.url}
                           type="button"
-                          onClick={() => handleEmojiSelect(emoji)}
-                          className={`h-8 w-8 rounded-lg text-lg flex items-center justify-center transition-all cursor-pointer ${
-                            previewImage === emoji
-                              ? "bg-emerald-100 ring-2 ring-emerald-600 scale-110"
-                              : "bg-white hover:bg-gray-100"
+                          title={preset.label}
+                          onClick={() => handlePresetSelect(preset.url)}
+                          className={`group relative h-10 w-10 overflow-hidden rounded-lg border transition-all cursor-pointer ${
+                            previewImage === preset.url
+                              ? "border-emerald-600 ring-2 ring-emerald-600 scale-105"
+                              : "border-gray-200 hover:border-emerald-400"
                           }`}
                         >
-                          {emoji}
+                          <img src={preset.url} alt={preset.label} className="h-full w-full object-cover" />
                         </button>
                       ))}
                     </div>
                   </div>
+
                 </div>
               </div>
               {errors.image && (

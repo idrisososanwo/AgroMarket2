@@ -7,6 +7,9 @@ import DeliveryMethodSelector from "../features/checkout/components/DeliveryMeth
 import PaymentReview from "../features/checkout/components/PaymentReview";
 import OrderSummaryCard from "../features/checkout/components/OrderSummaryCard";
 import OrderConfirmationModal from "../features/checkout/components/OrderConfirmationModal";
+import ProductImage from "../components/common/ProductImage";
+import { formatPrice } from "../utils/formatters";
+
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
@@ -198,7 +201,9 @@ export default function Checkout() {
                   {cartItems.map((item) => (
                     <div key={item.id} className="py-4 flex items-center justify-between gap-4 font-sans text-xs">
                       <div className="flex items-center gap-3">
-                        <span className="text-3xl select-none">{item.image || "🌾"}</span>
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 border border-gray-100 overflow-hidden">
+                          <ProductImage src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                        </div>
                         <div>
                           <h4 className="font-bold text-gray-900">{item.name}</h4>
                           <span className="text-2xs text-gray-500">Seller: {item.seller}</span>
@@ -206,15 +211,17 @@ export default function Checkout() {
                       </div>
                       <div className="text-right">
                         <span className="font-bold text-gray-900 block">
-                          {item.quantity} × ${item.price.toFixed(2)}
+                          {item.quantity} × {formatPrice(item.price)}
                         </span>
                         <span className="font-extrabold text-emerald-700 text-sm">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          {formatPrice(item.price * item.quantity)}
                         </span>
+
                       </div>
                     </div>
                   ))}
                 </div>
+
 
                 <div className="flex justify-end border-t border-gray-100 pt-6">
                   <button

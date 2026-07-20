@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Layout from "../components/layout/Layout";
+import { formatPrice } from "../utils/formatters";
 import { useAuth } from "../context/AuthContext";
 import { Package, Heart, User, Sparkles, ShoppingBag, ChevronRight, Clock, CheckCircle, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -139,7 +140,8 @@ export default function BuyerDashboard() {
                     </div>
 
                     <div className="flex items-center justify-between sm:justify-end gap-6 font-sans text-xs">
-                      <span className="font-extrabold text-gray-900">${order.total.toFixed(2)}</span>
+                      <span className="font-extrabold text-gray-900">{formatPrice(order.total)}</span>
+
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-2xs font-extrabold ${
                           order.status === "Delivered"

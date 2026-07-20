@@ -1,4 +1,8 @@
-import { Eye, Edit3, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Eye, Edit3, Trash2 } from "lucide-react";
+
+import ProductImage from "../../../components/common/ProductImage";
+import { formatPrice } from "../../../utils/formatters";
+
 import type { Product } from "../../../types";
 import { useDeleteProduct } from "../../../hooks/useProducts";
 import { toast } from "sonner";
@@ -77,15 +81,12 @@ export default function SellerProductTable({
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-2xl border border-gray-100">
-                        {product.image.startsWith("data:") || product.image.startsWith("http") ? (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="h-full w-full object-cover rounded-xl"
-                          />
-                        ) : (
-                          <span>{product.image || "🌾"}</span>
-                        )}
+                        <ProductImage
+                          src={product.image}
+                          alt={product.name}
+                          className="h-full w-full object-cover rounded-xl"
+                        />
+
                       </div>
                       <div>
                         <span className="font-bold text-gray-900 block font-sans">
@@ -103,7 +104,7 @@ export default function SellerProductTable({
                   </td>
 
                   <td className="py-4 px-4 font-extrabold text-emerald-700">
-                    ${product.price.toFixed(2)} / {product.unit || "kg"}
+                    {formatPrice(product.price)} / {product.unit || "kg"}
                   </td>
 
                   <td className="py-4 px-4 font-bold text-gray-900">
@@ -112,23 +113,20 @@ export default function SellerProductTable({
 
                   <td className="py-4 px-4">
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-2xs font-extrabold font-sans ${
-                        isAvailable
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-rose-100 text-rose-800"
+                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${
+                        isAvailable ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
                       }`}
                     >
-                      {isAvailable ? <CheckCircle className="h-3 w-3 text-emerald-600" /> : <XCircle className="h-3 w-3 text-rose-600" />}
                       {isAvailable ? "Active" : "Draft"}
                     </span>
                   </td>
 
-                  <td className="py-4 px-6 text-right">
+                  <td className="py-4 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => onView(product)}
-                        title="View Details"
-                        className="rounded-lg p-2 text-gray-400 hover:bg-emerald-50 hover:text-emerald-700 transition-colors cursor-pointer"
+                        title="View Product"
+                        className="rounded-lg p-2 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
@@ -136,16 +134,15 @@ export default function SellerProductTable({
                       <button
                         onClick={() => onEdit(product)}
                         title="Edit Product"
-                        className="rounded-lg p-2 text-gray-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer"
+                        className="rounded-lg p-2 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer"
                       >
                         <Edit3 className="h-4 w-4" />
                       </button>
 
                       <button
                         onClick={() => handleDelete(product)}
-                        disabled={deleteProductMutation.isPending}
                         title="Delete Product"
-                        className="rounded-lg p-2 text-gray-400 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer disabled:opacity-30"
+                        className="rounded-lg p-2 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -158,26 +155,30 @@ export default function SellerProductTable({
         </table>
       </div>
 
-      {/* Mobile Card Grid View */}
-      <div className="block md:hidden divide-y divide-gray-100">
+      {/* Mobile Cards View */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
         {products.map((product) => {
           const isAvailable = product.inStock !== false && product.in_stock !== false;
           return (
-            <div key={product.id} className="p-4 space-y-3">
+            <div
+              key={product.id}
+              className="rounded-2xl border border-gray-100 bg-white p-4 shadow-2xs space-y-3"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-2xl border border-gray-100">
-                    {product.image.startsWith("data:") || product.image.startsWith("http") ? (
-                      <img src={product.image} alt={product.name} className="h-full w-full object-cover rounded-xl" />
-                    ) : (
-                      <span>{product.image || "🌾"}</span>
-                    )}
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-2xl border border-gray-100">
+                    <ProductImage
+                      src={product.image}
+                      alt={product.name}
+                      className="h-full w-full object-cover rounded-xl"
+                    />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-gray-900 font-sans">{product.name}</h4>
+                    <h4 className="font-bold text-gray-900 font-sans text-sm">{product.name}</h4>
                     <span className="text-2xs text-gray-400 font-sans capitalize">{product.category}</span>
                   </div>
                 </div>
+
                 <span
                   className={`rounded-full px-2.5 py-1 text-2xs font-extrabold ${
                     isAvailable ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
@@ -188,7 +189,7 @@ export default function SellerProductTable({
               </div>
 
               <div className="flex items-center justify-between text-xs font-sans border-t border-gray-50 pt-2">
-                <span className="font-extrabold text-emerald-700">${product.price.toFixed(2)} / {product.unit || "kg"}</span>
+                <span className="font-extrabold text-emerald-700">{formatPrice(product.price)} / {product.unit || "kg"}</span>
                 <span className="text-gray-500 font-medium">{product.stock_quantity ?? 10} available</span>
               </div>
 

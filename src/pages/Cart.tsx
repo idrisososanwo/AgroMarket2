@@ -1,5 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../components/layout/Layout";
+import ProductImage from "../components/common/ProductImage";
+import { formatPrice } from "../utils/formatters";
+
 import { Trash2, ArrowRight, ArrowLeft, ShoppingBag, Plus, Minus, ShieldCheck, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
@@ -130,19 +133,16 @@ export default function Cart() {
                   className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-xs transition-all hover:shadow-md"
                 >
                   <div className="flex items-center gap-4 w-full sm:w-auto">
-                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-4xl border border-gray-100">
-                      {item.image.startsWith("data:") || item.image.startsWith("http") ? (
-                        <img src={item.image} alt={item.name} className="h-full w-full object-cover rounded-xl" />
-                      ) : (
-                        <span>{item.image || "🌾"}</span>
-                      )}
+                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-emerald-50 border border-gray-100 overflow-hidden">
+                      <ProductImage src={item.image} alt={item.name} className="h-full w-full object-cover" />
                     </div>
+
 
                     <div>
                       <h4 className="text-base font-bold text-gray-900 font-sans">{item.name}</h4>
                       <p className="text-xs text-gray-500 font-sans">Seller: {item.seller}</p>
                       <p className="text-xs font-extrabold text-emerald-700 font-sans mt-1">
-                        ${item.price.toFixed(2)} / {item.unit}
+                        {formatPrice(item.price)} / {item.unit}
                       </p>
                     </div>
                   </div>
@@ -169,8 +169,8 @@ export default function Cart() {
                     </div>
 
                     {/* Total Price */}
-                    <span className="text-base font-extrabold text-gray-900 font-sans w-20 text-right">
-                      ${(item.price * item.quantity).toFixed(2)}
+                    <span className="text-base font-extrabold text-gray-900 font-sans w-24 text-right">
+                      {formatPrice(item.price * item.quantity)}
                     </span>
 
                     {/* Remove */}
@@ -185,18 +185,19 @@ export default function Cart() {
                 </div>
               ))}
 
-              <div className="pt-2">
+              {/* Action Footer */}
+              <div className="flex justify-between items-center pt-2">
                 <Link
                   to="/"
-                  className="inline-flex items-center gap-2 text-xs font-bold text-emerald-600 hover:text-emerald-700 font-sans cursor-pointer"
+                  className="inline-flex items-center gap-2 text-xs font-bold text-emerald-600 hover:text-emerald-700 font-sans"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  <span>Continue Shopping</span>
+                  <span>Continue Produce Shopping</span>
                 </Link>
               </div>
             </div>
 
-            {/* Order Summary Sidebar */}
+            {/* Cart Right Summary Column */}
             <div>
               <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sticky top-24">
                 <h3 className="text-lg font-extrabold text-gray-900 font-sans border-b border-gray-100 pb-4 mb-4">
@@ -206,24 +207,24 @@ export default function Cart() {
                 <div className="space-y-3 text-xs font-sans">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span className="font-bold text-gray-900">${subtotal.toFixed(2)}</span>
+                    <span className="font-bold text-gray-900">{formatPrice(subtotal)}</span>
                   </div>
 
                   <div className="flex justify-between text-gray-600">
                     <span className="flex items-center gap-1">
                       <Truck className="h-3.5 w-3.5 text-emerald-600" /> Estimated Dispatch
                     </span>
-                    <span className="font-bold text-gray-900">${deliveryCost.toFixed(2)}</span>
+                    <span className="font-bold text-gray-900">{formatPrice(deliveryCost)}</span>
                   </div>
 
                   <div className="flex justify-between text-gray-600">
                     <span>Tax (5%)</span>
-                    <span className="font-bold text-gray-900">${tax.toFixed(2)}</span>
+                    <span className="font-bold text-gray-900">{formatPrice(tax)}</span>
                   </div>
 
                   <div className="border-t border-gray-100 pt-3 flex justify-between text-base font-extrabold text-gray-900">
                     <span>Estimated Total</span>
-                    <span className="text-emerald-700">${estimatedTotal.toFixed(2)}</span>
+                    <span className="text-emerald-700">{formatPrice(estimatedTotal)}</span>
                   </div>
                 </div>
 

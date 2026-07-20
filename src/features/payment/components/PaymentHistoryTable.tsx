@@ -1,5 +1,7 @@
 import { ExternalLink, CheckCircle2, XCircle } from "lucide-react";
 import type { StellarPaymentRecord } from "../types/payment.types";
+import { formatPrice } from "../../../utils/formatters";
+
 
 interface PaymentHistoryTableProps {
   records: StellarPaymentRecord[];
@@ -66,9 +68,10 @@ export default function PaymentHistoryTable({ records, isLoading = false }: Paym
                 <td className="py-3.5 px-4 font-extrabold text-emerald-800">
                   {record.amount_xlm} XLM
                   <span className="text-2xs text-gray-400 font-normal block">
-                    (${record.amount_usd.toFixed(2)} USD)
+                    ({formatPrice(record.amount_usd)})
                   </span>
                 </td>
+
 
                 <td className="py-3.5 px-4 font-mono text-2xs font-bold text-gray-700">
                   {record.network}

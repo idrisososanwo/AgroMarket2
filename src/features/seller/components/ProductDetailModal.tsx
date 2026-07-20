@@ -1,5 +1,8 @@
 import { X, CheckCircle, XCircle } from "lucide-react";
 import type { Product } from "../../../types";
+import ProductImage from "../../../components/common/ProductImage";
+import { formatPrice } from "../../../utils/formatters";
+
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -27,13 +30,10 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
         </div>
 
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className="flex h-32 w-32 items-center justify-center rounded-2xl bg-emerald-50 text-6xl shadow-inner">
-            {product.image.startsWith("data:") || product.image.startsWith("http") ? (
-              <img src={product.image} alt={product.name} className="h-full w-full object-cover rounded-2xl" />
-            ) : (
-              <span>{product.image || "🌾"}</span>
-            )}
+          <div className="flex h-32 w-32 items-center justify-center rounded-2xl bg-emerald-50 shadow-inner overflow-hidden">
+            <ProductImage src={product.image} alt={product.name} className="h-full w-full object-cover" />
           </div>
+
 
           <div>
             <span className="inline-block rounded-full bg-emerald-100 px-3 py-1 text-2xs font-bold text-emerald-800 uppercase tracking-wider font-sans mb-1">
@@ -53,8 +53,9 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
                 Selling Price
               </span>
               <span className="text-lg font-extrabold text-emerald-700 font-sans">
-                ${product.price.toFixed(2)} / {product.unit || "kg"}
+                {formatPrice(product.price)} / {product.unit || "kg"}
               </span>
+
             </div>
 
             <div>

@@ -1,5 +1,7 @@
 import { Package, CheckCircle2, ShoppingBag, DollarSign } from "lucide-react";
 import type { SellerStatsData } from "../types/seller.types";
+import { formatPrice } from "../../../utils/formatters";
+
 
 interface SellerStatsProps {
   stats: SellerStatsData;
@@ -34,12 +36,13 @@ export default function SellerStats({ stats, isLoading = false }: SellerStatsPro
     },
     {
       label: "Total Revenue",
-      value: `$${stats.totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+      value: formatPrice(stats.totalRevenue),
       icon: DollarSign,
       color: "bg-purple-500",
       textColor: "text-purple-700",
       bgColor: "bg-purple-50",
     },
+
   ];
 
   if (isLoading) {

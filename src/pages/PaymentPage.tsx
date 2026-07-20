@@ -4,6 +4,8 @@ import Layout from "../components/layout/Layout";
 import StellarPaymentModal from "../features/payment/components/StellarPaymentModal";
 import { ArrowLeft, Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "../utils/formatters";
+
 import { useOrderDetails } from "../hooks/useOrders";
 import { useXlmExchangeRate } from "../hooks/payment/useStellarPayment";
 
@@ -86,14 +88,14 @@ export default function PaymentPage() {
                 {order.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between">
                     <span className="text-gray-700 font-medium">{item.name} ×{item.qty ?? 1}</span>
-                    <span className="font-extrabold text-gray-900">${((item.qty ?? 1) * item.price).toFixed(2)}</span>
+                    <span className="font-extrabold text-gray-900">{formatPrice((item.qty ?? 1) * item.price)}</span>
                   </div>
                 ))}
               </div>
 
               <div className="border-t border-gray-200/60 pt-3 flex justify-between text-sm font-extrabold text-gray-900">
-                <span>Grand Total (USD):</span>
-                <span className="text-emerald-700">${amountUsd.toFixed(2)}</span>
+                <span>Grand Total:</span>
+                <span className="text-emerald-700">{formatPrice(amountUsd)}</span>
               </div>
             </div>
 
@@ -106,9 +108,10 @@ export default function PaymentPage() {
                 {amountXlm} XLM
               </div>
               <span className="text-xs text-gray-500">
-                Exchange Rate: 1 XLM = ${exchangeRate} USD
+                Exchange Rate: 1 XLM = ₦200 (or ${exchangeRate} USD)
               </span>
             </div>
+
           </div>
 
           <div className="pt-4 flex justify-end">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Send, Loader2 } from "lucide-react";
 import RatingStars from "./RatingStars";
 import type { Review } from "../../../types";
@@ -18,21 +18,19 @@ export default function ReviewFormModal({
   isSubmitting = false,
   reviewToEdit,
 }: ReviewFormModalProps) {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
 
-  const [rating, setRating] = useState(() => reviewToEdit?.rating ?? 5);
-  const [comment, setComment] = useState(() => reviewToEdit?.comment ?? "");
+  useEffect(() => {
+    if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRating(reviewToEdit?.rating ?? 5);
+      setComment(reviewToEdit?.comment ?? "");
+    }
+  }, [isOpen, reviewToEdit]);
 
-
-  const [prevReviewId, setPrevReviewId] = useState<string | null>(null);
-
-  if (reviewToEdit?.id !== prevReviewId) {
-    setPrevReviewId(reviewToEdit?.id || null);
-    setRating(reviewToEdit?.rating ?? 5);
-    setComment(reviewToEdit?.comment ?? "");
-  }
 
   if (!isOpen) return null;
-
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

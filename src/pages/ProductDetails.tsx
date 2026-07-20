@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Layout from "../components/layout/Layout";
 import ProductCard from "../components/common/ProductCard";
 import ProductSkeleton from "../components/common/ProductSkeleton";
 import ErrorState from "../components/common/ErrorState";
+import ProductImage from "../components/common/ProductImage";
+import { formatPrice } from "../utils/formatters";
+
+
 import {
   Star,
   Truck,
@@ -31,8 +35,14 @@ export default function ProductDetails() {
 
   const [quantity, setQuantity] = useState(1);
 
+  // Scroll to top when product ID changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [id]);
+
   // Queries
   const { data: product, isLoading, isError, error, refetch } = useProduct(id || "");
+
   const { data: relatedProducts = [] } = useProducts(
     product ? { category: product.category, limit: 4 } : undefined
   );
@@ -130,10 +140,13 @@ export default function ProductDetails() {
         {/* Main Product Layout Grid */}
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 mb-16">
           {/* Left Column: Large Image Showcase */}
-          <div className="relative flex min-h-[350px] sm:min-h-[450px] items-center justify-center rounded-3xl border border-gray-100 bg-gradient-to-br from-emerald-50/40 via-white to-green-50/20 p-8 shadow-sm">
-            <span className="text-9xl sm:text-[13rem] select-none transition-transform duration-500 hover:scale-105">
-              {product.image || "🌾"}
-            </span>
+          <div className="relative flex min-h-[350px] sm:min-h-[450px] items-center justify-center rounded-3xl border border-gray-100 bg-gradient-to-br from-emerald-50/40 via-white to-green-50/20 overflow-hidden shadow-sm">
+            <ProductImage
+              src={product.image}
+              alt={product.name}
+              className="h-full max-h-[450px] w-full object-cover rounded-3xl transition-transform duration-500 hover:scale-105"
+            />
+
 
             {/* Category Tag */}
             <span className="absolute top-5 left-5 rounded-full bg-white px-4 py-1.5 text-xs font-bold text-emerald-800 shadow-sm capitalize font-sans">
@@ -191,12 +204,13 @@ export default function ProductDetails() {
               {/* Price & Unit */}
               <div className="mt-4 flex items-baseline gap-2">
                 <span className="text-3xl font-black text-emerald-700 font-sans">
-                  ${product.price.toFixed(2)}
+                  {formatPrice(product.price)}
                 </span>
                 <span className="text-sm font-semibold text-gray-500 font-sans">
                   per {product.unit || "kg"}
                 </span>
               </div>
+
 
               {/* Description */}
               <p className="mt-6 text-sm sm:text-base text-gray-600 font-sans leading-relaxed">
@@ -281,7 +295,8 @@ export default function ProductDetails() {
                   <span>
                     {addToCartMutation.isPending
                       ? "Adding to Cart..."
-                      : `Add ${quantity} to Cart • $${(product.price * quantity).toFixed(2)}`}
+                      : `Add ${quantity} to Cart • ${formatPrice(product.price * quantity)}`}
+
                   </span>
                 </button>
               </div>
