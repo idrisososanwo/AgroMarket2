@@ -53,7 +53,7 @@ export const cartService = {
         .select("*")
         .eq("user_id", user_id)
         .eq("product_id", product_id)
-        .single();
+        .maybeSingle();
 
       if (existingItem) {
         const newQuantity = existingItem.quantity + quantity;
