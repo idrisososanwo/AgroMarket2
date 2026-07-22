@@ -929,6 +929,7 @@ export const productService = {
         reviews: p.reviews,
         image: p.image,
         seller: p.seller,
+        seller_id: p.seller_id,
         location: p.location || "",
         in_stock: p.inStock ?? p.in_stock ?? true,
         stock_quantity: p.stock_quantity ?? 50,

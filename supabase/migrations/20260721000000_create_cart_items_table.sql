@@ -13,13 +13,15 @@ CREATE TABLE IF NOT EXISTS public.products (
     reviews INTEGER DEFAULT 0,
     image TEXT,
     seller TEXT,
-    seller_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    seller_id UUID,
     location TEXT,
     in_stock BOOLEAN DEFAULT true,
     stock_quantity INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
+
+ALTER TABLE public.products DROP CONSTRAINT IF EXISTS products_seller_id_fkey;
 
 -- Enable RLS on products if created
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;

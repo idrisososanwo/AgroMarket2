@@ -91,6 +91,7 @@ export const orderService = {
     try {
       const orderPayload = {
         buyer_id: input.buyer_id,
+        user_id: input.buyer_id,
         seller_id: input.seller_id,
         delivery_cost: input.deliveryCost,
         tax: input.tax,
